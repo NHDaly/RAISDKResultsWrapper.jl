@@ -5,6 +5,7 @@ import JSON3
 
 
 export output, tuples
+export ResultsCursor, TuplesIterator, PhysicalRelation
 
 function output(transaction_result)
     return ResultsCursor(transaction_result.output)
@@ -52,6 +53,8 @@ function Base.show(io::IO, tuples::TuplesIterator)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", tuples::TuplesIterator)
+    isempty(tuples) && return show(io, tuples)
+
     print(io, "$TuplesIterator with $(tuples.length) tuples:")
     # isempty(iter) && get(io, :compact, false) && return show(io, iter)
     # summary(io, iter)
