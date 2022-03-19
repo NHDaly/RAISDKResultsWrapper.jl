@@ -3,6 +3,18 @@ struct PhysicalRelation
     relpath::Vector{String}
     columns::JSON3.Array
 end
+_slots(relpath::Vector{String}) =
+    Int[i for (i,v) in enumerate(relpath) if !startswith(v, ':')]
+
+# reverse constructor from TuplesIterator (for convenience at REPL)
+function PhysicalRelation(relpath, tuples::TuplesIterator)
+    # TODO: there must be a better way to do this than to write+read?
+    columns = JSON3.read(JSON3.write([
+        [ tup[slot] for tup in tuples ]
+        for slot in _slots(relpath)
+    ]))
+    return PhysicalRelation(relpath, columns)
+end
 
 _num_tuples(r::PhysicalRelation) = max(length(r.columns[1]), 1)
 
