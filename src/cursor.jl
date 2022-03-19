@@ -13,7 +13,7 @@ end
 
 
 function tuples(cursor::ResultsCursor)
-    len = sum(_num_tuples(r) for r in relations(cursor))
+    len = sum((_num_tuples(r) for r in relations(cursor)), init=0)
     tuples = (
         row_getter(i)
         for r in sort(relations(cursor), by=r->r.relpath)
