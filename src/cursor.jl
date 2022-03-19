@@ -6,10 +6,13 @@ struct ResultsCursor  # TODO: Name?
     json_outputs::JSON3.Array
 end
 
-#function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
-#    #len =
-#    print(io, "$ResultsCursor with ")
-#end
+# TODO: for now, we just show tuples(), but the goal is to show a Trie here!
+function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
+    tups = tuples(cursor)
+    rels = relations(cursor)
+    print(io, "$ResultsCursor with $(length(tups)) tuples in $(length(rels)) physical relations:")
+    _show_list(io, tups)
+end
 
 
 function tuples(cursor::ResultsCursor)
