@@ -38,12 +38,18 @@ struct TuplesIterator{G}
     length::Int
     generator::G
 end
+TuplesIterator(itr) = TuplesIterator(length(itr), itr)
 
 # iteration interface
 Base.iterate(t::TuplesIterator, args...) = iterate(t.generator, args...)
 Base.length(t::TuplesIterator) = t.length
 Base.eltype(::Type{<:TuplesIterator}) = Tuple
 
+function Base.show(io::IO, tuples::TuplesIterator)
+    Base.print(io, "$TuplesIterator(")
+    Base.show(io, collect(Tuple, tuples.generator))
+    Base.print(io, ")")
+end
 
 function Base.show(io::IO, ::MIME"text/plain", tuples::TuplesIterator)
     print(io, "$TuplesIterator with $(tuples.length) tuples:")
