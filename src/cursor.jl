@@ -8,13 +8,43 @@ struct ResultsCursor  # TODO: Name?
     _json_outputs::JSON3.Array
 end
 
-# TODO: for now, we just show tuples(), but the goal is to show a Trie here!
 function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
-    tups = tuples(cursor)
-    rels = relations(cursor)
-    print(io, "$ResultsCursor with $(length(tups)) tuples in $(length(rels)) physical relations:")
-    _show_list(io, tups)
+    num_rels = length(cursor.iterator.relations)
+    print(io, "$ResultsCursor with <TODO> tuples in $(num_rels) physical relations:")
+    _show_trie(io, cursor)
 end
+
+
+Base.keys(cursor::ResultsCursor) = keys(cursor.iterator)
+Base.getindex(cursor::ResultsCursor, element) =
+    ResultsCursor(cursor.iterator[element], cursor._json_outputs)
+function Base.getindex(cursor::ResultsCursor, elements...)
+    for element in elements
+        cursor = getindex(cursor, element)
+    end
+    return cursor
+end
+
+
+
+function _show_trie(io, cursor::ResultsCursor)
+    __show_trie(io, cursor)
+end
+function __show_trie(io, cursor::ResultsCursor; indent=0, num_lines = 10)
+    for key in keys(cursor)
+        num_lines -= 1
+        if num_lines < 0
+            print("\n" * " "^indent, "⋮")
+            return
+        end
+        print("\n" * " "^indent, repr(key), " => ")
+        __show_trie(io, cursor[key];
+            indent = indent + length(key)+1,
+            num_lines = num_lines)
+    end
+end
+
+
 
 
 function tuples(cursor::ResultsCursor)

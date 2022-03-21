@@ -45,6 +45,27 @@ function TrieWalker(relations::Vector{PhysicalRelation})
     return TrieWalker([PhysicalRelationIterator(r) for r in relations], ())
 end
 
+function Base.keys(t::TrieWalker)
+    e = length(t.prefix) + 1
+
+    keyset = sizehint!(OrderedSet{Any}(), length(t.relations))
+    for iter in t.relations
+        if e <= length(iter.maybe_columns)
+            maybe_col = iter.maybe_columns[e]
+            if maybe_col.type == SPECIALIZED
+                push!(keyset, maybe_col.val)
+            else
+                col = maybe_col.val::AbstractVector
+                sizehint!(keyset, length(keyset) + length(col))
+                for v in col
+                    push!(keyset, v)
+                end
+            end
+        end
+    end
+    return keyset
+end
+
 function Base.getindex(t::TrieWalker, v)
     e = length(t.prefix) + 1
 
