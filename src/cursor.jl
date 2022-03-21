@@ -1,9 +1,11 @@
 function output(transaction_result)
-    return ResultsCursor(transaction_result.output)
+    json = transaction_result.output
+    return ResultsCursor(TrieWalker(relations(json)), json)
 end
 
 struct ResultsCursor  # TODO: Name?
-    json_outputs::JSON3.Array
+    iterator::TrieWalker
+    _json_outputs::JSON3.Array
 end
 
 # TODO: for now, we just show tuples(), but the goal is to show a Trie here!
@@ -28,9 +30,13 @@ end
 
 
 function relations(cursor::ResultsCursor)
+    return relations(cursor._json_outputs)
+end
+
+function relations(outputs::JSON3.Array)
     return PhysicalRelation[
         PhysicalRelation(_relpath_from_rel_key(relation.rel_key), relation.columns)
-        for relation in cursor.json_outputs
+        for relation in outputs
     ]
 end
 function _relpath_str(rel_key::JSON3.Object)
