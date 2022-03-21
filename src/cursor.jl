@@ -1,11 +1,10 @@
 function output(transaction_result)
     json = transaction_result.output
-    return ResultsCursor(TrieWalker(relations(json)), json)
+    return ResultsCursor(TrieWalker(relations(json)))
 end
 
 struct ResultsCursor  # TODO: Name?
     iterator::TrieWalker
-    _json_outputs::JSON3.Array
 end
 
 function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
@@ -16,8 +15,7 @@ end
 
 
 Base.keys(cursor::ResultsCursor) = keys(cursor.iterator)
-Base.getindex(cursor::ResultsCursor, element) =
-    ResultsCursor(cursor.iterator[element], cursor._json_outputs)
+Base.getindex(cursor::ResultsCursor, element) = ResultsCursor(cursor.iterator[element])
 function Base.getindex(cursor::ResultsCursor, elements...)
     for element in elements
         cursor = getindex(cursor, element)
@@ -60,7 +58,10 @@ end
 
 
 function relations(cursor::ResultsCursor)
-    return relations(cursor._json_outputs)
+    return PhysicalRelation[
+        r_iter.relation
+        for r_iter in cursor.iterator.relations
+    ]
 end
 
 function relations(outputs::JSON3.Array)

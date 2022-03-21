@@ -20,15 +20,16 @@ end
 struct PhysicalRelationIterator
     relpath::Vector{String}
     maybe_columns::Vector{ColumnOrSpecialized}
+    relation::PhysicalRelation
 
     row_idx::Int # Current row offset into the relation
 end
 
 function PhysicalRelationIterator(r::PhysicalRelation)
-    return PhysicalRelationIterator(r.relpath, _unspecialized_columns(r), 1)
+    return PhysicalRelationIterator(r.relpath, _unspecialized_columns(r), r, 1)
 end
 function seek_to(iter::PhysicalRelationIterator, i::Int)
-    return PhysicalRelationIterator(iter.relpath, iter.maybe_columns, i)
+    return PhysicalRelationIterator(iter.relpath, iter.maybe_columns, iter.relation, i)
 end
 
 struct TrieWalker
