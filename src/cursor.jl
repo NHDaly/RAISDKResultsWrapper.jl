@@ -48,7 +48,7 @@ end
 function tuples(cursor::ResultsCursor)
     len = sum((_num_tuples(r) for r in relations(cursor)), init=0)
     tuples = (
-        row_getter(i)
+        row_getter(i)[(length(cursor.iterator.prefix)+1):end]
         for r in sort(relations(cursor), by=r->r.relpath)
         for row_getter in (RAI._make_getrow(r.relpath, r.columns),)
         for i in 1:_num_tuples(r)
