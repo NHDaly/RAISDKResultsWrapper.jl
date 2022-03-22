@@ -9,11 +9,13 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
     num_rels = length(cursor.iterator.relations)
-    print(io, "$ResultsCursor with <TODO> tuples in $(num_rels) physical relations:")
+    tups = tuples(cursor)
+    print(io, "$ResultsCursor with $(length(tups)) tuples in $(num_rels) physical relations:")
     _show_trie(io, cursor)
 end
 
 
+Base.keytype(_::ResultsCursor) = Any
 Base.keys(cursor::ResultsCursor) = keys(cursor.iterator)
 Base.getindex(cursor::ResultsCursor, element) = ResultsCursor(cursor.iterator[element])
 function Base.getindex(cursor::ResultsCursor, elements...)
@@ -35,10 +37,14 @@ function __show_trie(io, cursor::ResultsCursor; indent=0, num_lines = 10)
             print("\n" * " "^indent, "⋮")
             return
         end
-        print("\n" * " "^indent, repr(key), " => ")
-        __show_trie(io, cursor[key];
-            indent = indent + length(key)+1,
-            num_lines = num_lines)
+        print("\n" * " "^indent, repr(key))
+        subcursor = cursor[key]
+        #if !isempty(tuples(subcursor))
+            print(io, " => ")
+            __show_trie(io, subcursor;
+                indent = indent + length(key)+1,
+                num_lines = num_lines)
+        #end
     end
 end
 

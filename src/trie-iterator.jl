@@ -17,6 +17,9 @@ function _unspecialized_columns(relation::PhysicalRelation)
     ]
 end
 
+# TODO: haha oh shit, i've got to change this back to iterating over tuples, so that we can
+# handle the end of the prefix. 🙄
+# We need to do the binary search on the tuples() object directly
 struct PhysicalRelationIterator
     relpath::Vector{String}
     maybe_columns::Vector{ColumnOrSpecialized}
@@ -50,7 +53,7 @@ function Base.keys(t::TrieWalker)
     e = length(t.prefix) + 1
 
     keyset = sizehint!(OrderedSet{Any}(), length(t.relations))
-    for iter in t.relations
+    for iter in sort(t.relations, by=r->r.relpath)
         if e <= length(iter.maybe_columns)
             maybe_col = iter.maybe_columns[e]
             if maybe_col.type == SPECIALIZED
