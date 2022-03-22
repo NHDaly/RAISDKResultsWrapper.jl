@@ -27,6 +27,17 @@ function tuples(r::PhysicalRelation)
     )
     return TuplesIterator(len, tuples)
 end
+function tuples(rs::Vector{PhysicalRelation})
+    len = sum((_num_tuples(r) for r in rs), init=0)
+    tuples = (
+        row_getter(i)
+        for r in sort(rs, by=r->r.relpath)
+        for row_getter in (RAI._make_getrow(r.relpath, r.columns),)
+        for i in 1:_num_tuples(r)
+    )
+    return TuplesIterator(len, tuples)
+end
+
 
 function Base.show(io::IO, r::PhysicalRelation)
     print(io, "$PhysicalRelation($(r.relpath), ")

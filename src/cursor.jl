@@ -1,24 +1,60 @@
 function output(transaction_result)
-    return ResultsCursor(transaction_result.output)
+    json = transaction_result.output
+    return ResultsCursor(TrieWalker(relations(json)))
 end
 
 struct ResultsCursor  # TODO: Name?
-    json_outputs::JSON3.Array
+    iterator::TrieWalker
 end
 
-# TODO: for now, we just show tuples(), but the goal is to show a Trie here!
 function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
+    num_rels = length(cursor.iterator.relations)
     tups = tuples(cursor)
-    rels = relations(cursor)
-    print(io, "$ResultsCursor with $(length(tups)) tuples in $(length(rels)) physical relations:")
-    _show_list(io, tups)
+    print(io, "$ResultsCursor with $(length(tups)) tuples in $(num_rels) physical relations:")
+    _show_trie(io, cursor)
 end
+
+
+Base.keytype(_::ResultsCursor) = Any
+Base.keys(cursor::ResultsCursor) = keys(cursor.iterator)
+Base.getindex(cursor::ResultsCursor, element) = ResultsCursor(cursor.iterator[element])
+function Base.getindex(cursor::ResultsCursor, elements...)
+    for element in elements
+        cursor = getindex(cursor, element)
+    end
+    return cursor
+end
+
+
+
+function _show_trie(io, cursor::ResultsCursor)
+    __show_trie(io, cursor)
+end
+function __show_trie(io, cursor::ResultsCursor; indent=0, num_lines = 10)
+    for key in keys(cursor)
+        num_lines -= 1
+        if num_lines < 0
+            print("\n" * " "^indent, "⋮")
+            return
+        end
+        print("\n" * " "^indent, repr(key))
+        subcursor = cursor[key]
+        #if !isempty(tuples(subcursor))
+            print(io, " => ")
+            __show_trie(io, subcursor;
+                indent = indent + length(key)+1,
+                num_lines = num_lines)
+        #end
+    end
+end
+
+
 
 
 function tuples(cursor::ResultsCursor)
     len = sum((_num_tuples(r) for r in relations(cursor)), init=0)
     tuples = (
-        row_getter(i)
+        row_getter(i)[(length(cursor.iterator.prefix)+1):end]
         for r in sort(relations(cursor), by=r->r.relpath)
         for row_getter in (RAI._make_getrow(r.relpath, r.columns),)
         for i in 1:_num_tuples(r)
@@ -29,8 +65,15 @@ end
 
 function relations(cursor::ResultsCursor)
     return PhysicalRelation[
+        r_iter.relation
+        for r_iter in cursor.iterator.relations
+    ]
+end
+
+function relations(outputs::JSON3.Array)
+    return PhysicalRelation[
         PhysicalRelation(_relpath_from_rel_key(relation.rel_key), relation.columns)
-        for relation in cursor.json_outputs
+        for relation in outputs
     ]
 end
 function _relpath_str(rel_key::JSON3.Object)
