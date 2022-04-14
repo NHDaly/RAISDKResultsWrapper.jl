@@ -10,6 +10,6 @@ export RelationIterator, TuplesIterator, PhysicalRelation
 include("tuples.jl")
 include("physical-relations.jl")
 include("trie-iterator.jl")
-include("cursor.jl")
+include("relation-iterator.jl")
 
 end
