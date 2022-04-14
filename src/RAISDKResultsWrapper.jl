@@ -5,7 +5,7 @@ import JSON3
 using DataStructures: OrderedSet
 
 export output, tuples, relations
-export ResultsCursor, TuplesIterator, PhysicalRelation
+export RelationIterator, TuplesIterator, PhysicalRelation
 
 include("tuples.jl")
 include("physical-relations.jl")

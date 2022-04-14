@@ -1,24 +1,24 @@
 function output(transaction_result)
     json = transaction_result.output
-    return ResultsCursor(TrieWalker(relations(json)))
+    return RelationIterator(TrieWalker(relations(json)))
 end
 
-struct ResultsCursor  # TODO: Name?
+struct RelationIterator  # TODO: Name?
     iterator::TrieWalker
 end
 
-function Base.show(io::IO, ::MIME"text/plain", cursor::ResultsCursor)
+function Base.show(io::IO, ::MIME"text/plain", cursor::RelationIterator)
     num_rels = length(cursor.iterator.relations)
     tups = tuples(cursor)
-    print(io, "$ResultsCursor with $(length(tups)) tuples in $(num_rels) physical relations:")
+    print(io, "$RelationIterator with $(length(tups)) tuples in $(num_rels) physical relations:")
     _show_trie(io, cursor)
 end
 
 
-Base.keytype(_::ResultsCursor) = Any
-Base.keys(cursor::ResultsCursor) = keys(cursor.iterator)
-Base.getindex(cursor::ResultsCursor, element) = ResultsCursor(cursor.iterator[element])
-function Base.getindex(cursor::ResultsCursor, elements...)
+Base.keytype(_::RelationIterator) = Any
+Base.keys(cursor::RelationIterator) = keys(cursor.iterator)
+Base.getindex(cursor::RelationIterator, element) = RelationIterator(cursor.iterator[element])
+function Base.getindex(cursor::RelationIterator, elements...)
     for element in elements
         cursor = getindex(cursor, element)
     end
@@ -27,10 +27,10 @@ end
 
 
 
-function _show_trie(io, cursor::ResultsCursor)
+function _show_trie(io, cursor::RelationIterator)
     __show_trie(io, cursor)
 end
-function __show_trie(io, cursor::ResultsCursor; indent=0, num_lines = 10)
+function __show_trie(io, cursor::RelationIterator; indent=0, num_lines = 10)
     for key in keys(cursor)
         num_lines -= 1
         if num_lines < 0
@@ -51,7 +51,7 @@ end
 
 
 
-function tuples(cursor::ResultsCursor)
+function tuples(cursor::RelationIterator)
     len = sum((_num_tuples(r) for r in relations(cursor)), init=0)
     tuples = (
         row_getter(i)[(length(cursor.iterator.prefix)+1):end]
@@ -63,7 +63,7 @@ function tuples(cursor::ResultsCursor)
 end
 
 
-function relations(cursor::ResultsCursor)
+function relations(cursor::RelationIterator)
     return PhysicalRelation[
         r_iter.relation
         for r_iter in cursor.iterator.relations
