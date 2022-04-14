@@ -23,7 +23,7 @@ JSON3.Object{Vector{UInt8}, Vector{UInt64}} with 6 entries:
   :aborted     => false
   :type        => "TransactionResult"
 
-julia> cursor = output(r)
+julia> iter = output(r)
 RelationIterator with 105 tuples in 5 physical relations:
 ":output" =>
         ":a" =>
@@ -51,7 +51,7 @@ RelationIterator with 105 tuples in 5 physical relations:
              19 =>
                5 =>
 
-julia> cursor[":output"][":y"]
+julia> iter[":output"][":y"]
 RelationIterator with 2 tuples in 1 physical relations:
 10 =>
   20 =>
@@ -62,27 +62,27 @@ RelationIterator with 2 tuples in 1 physical relations:
   19 =>
     5 =>
 
-julia> cursor[":output"][":y"][10]  # This should only show `(20, 5)`, but it's still buggy
+julia> iter[":output"][":y"][10]  # This should only show `(20, 5)`, but it's still buggy
 RelationIterator with 2 tuples in 1 physical relations:
 20 =>
   5 =>
 19 =>
 
-julia> tuples(cursor[":output"][":a"])
+julia> tuples(iter[":output"][":a"])
 TuplesIterator with 3 tuples:
   (1,)
   (2,)
   (3, "hi")
 
-julia> collect(tuples(cursor[":output"][":a"]))[3]
+julia> collect(tuples(iter[":output"][":a"]))[3]
 (3, "hi")
 
-julia> relations(cursor[":output"][":a"])
+julia> relations(iter[":output"][":a"])
 2-element Vector{PhysicalRelation}:
  PhysicalRelation([":output", ":a", "Int64"], TuplesIterator(Tuple[(:output, :a, 1), (:output, :a, 2)]))
  PhysicalRelation([":output", ":a", "Int64", "String"], TuplesIterator(Tuple[(:output, :a, 3, "hi")]))
 
-julia> tuples(relations(cursor[":output"][":a"]))
+julia> tuples(relations(iter[":output"][":a"]))
 TuplesIterator with 3 tuples:
   (:output, :a, 1)
   (:output, :a, 2)
