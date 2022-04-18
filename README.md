@@ -9,7 +9,11 @@ The main interfaces are:
 
 ## Examples
 ```julia
-julia> r = RAI.exec(ctx, "nhd-test-1", "nhd-s", """
+julia> using RAI
+
+julia> using RAISDKResultsWrapper
+
+julia> r = RAI.exec_v1(ctx, "nhd-test-1", "nhd-s", """
            :a, (1; 2; (3, "hi"));
            :b, "hi", :c, (range[2, 100, 1]);
            :x, true;
